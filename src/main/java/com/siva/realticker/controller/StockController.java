@@ -27,7 +27,10 @@ public class StockController {
                 .data(mockStockDataService.getTop10Stocks())
                 .build();
     }
-
+    @GetMapping("/health")
+    public String health() {
+        return "RealTicker backend is running";
+    }
     @GetMapping("/{ticker}/history")
     public ApiResponse<StockHistoryResponse> getStockHistory(@PathVariable String ticker) {
         Stock stock = mockStockDataService.getStockByTicker(ticker);
