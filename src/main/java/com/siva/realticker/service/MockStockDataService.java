@@ -2,6 +2,7 @@ package com.siva.realticker.service;
 
 import com.siva.realticker.model.HistoricalPrice;
 import com.siva.realticker.model.Stock;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -12,6 +13,7 @@ import java.util.Random;
 @Service
 public class MockStockDataService {
 
+    @Cacheable("topStocks")
     public List<Stock> getTop10Stocks() {
         List<Stock> stocks = new ArrayList<>();
 
@@ -29,6 +31,7 @@ public class MockStockDataService {
         return stocks;
     }
 
+    @Cacheable(value = "stockHistory", key = "#ticker")
     public List<HistoricalPrice> getStockHistory(String ticker) {
         List<HistoricalPrice> history = new ArrayList<>();
         Random random = new Random(ticker.hashCode());
@@ -65,6 +68,7 @@ public class MockStockDataService {
         return history;
     }
 
+    @Cacheable(value = "stockBySymbol", key = "#ticker")
     public Stock getStockByTicker(String ticker) {
         return getTop10Stocks().stream()
                 .filter(stock -> stock.getTicker().equalsIgnoreCase(ticker))

@@ -7,6 +7,7 @@ import com.siva.realticker.model.HistoricalPrice;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -24,6 +25,7 @@ public class HuggingFaceService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    @Cacheable(value = "aiAnalysis", key = "#ticker + '-' + #history.hashCode()")
     public AnalysisResult analyzeStockHistory(String ticker, List<HistoricalPrice> history) {
         try {
             if (history == null || history.size() < 2) {
@@ -164,7 +166,6 @@ public class HuggingFaceService {
     }
 
     private String callHuggingFace(String prompt) {
-        // ✅ FIXED ENDPOINT - Works April 2026
         String url = "https://router.huggingface.co/models/gpt2";
 
         HttpHeaders headers = new HttpHeaders();

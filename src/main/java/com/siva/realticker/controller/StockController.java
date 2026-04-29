@@ -1,6 +1,10 @@
 package com.siva.realticker.controller;
 
-import com.siva.realticker.dto.*;
+import com.siva.realticker.dto.AnalysisResult;
+import com.siva.realticker.dto.AnalyzeRequest;
+import com.siva.realticker.dto.AnalyzeResponse;
+import com.siva.realticker.dto.ApiResponse;
+import com.siva.realticker.dto.StockHistoryResponse;
 import com.siva.realticker.model.HistoricalPrice;
 import com.siva.realticker.model.Stock;
 import com.siva.realticker.service.HuggingFaceService;
@@ -13,7 +17,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/stocks")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {
+        "http://localhost:5173",
+        "https://realticker-frontend.onrender.com"
+})
 public class StockController {
 
     private final MockStockDataService mockStockDataService;
@@ -27,10 +34,12 @@ public class StockController {
                 .data(mockStockDataService.getTop10Stocks())
                 .build();
     }
+
     @GetMapping("/health")
     public String health() {
         return "RealTicker backend is running";
     }
+
     @GetMapping("/{ticker}/history")
     public ApiResponse<StockHistoryResponse> getStockHistory(@PathVariable String ticker) {
         Stock stock = mockStockDataService.getStockByTicker(ticker);
@@ -43,10 +52,12 @@ public class StockController {
                     .build();
         }
 
+        List<HistoricalPrice> history = mockStockDataService.getStockHistory(ticker);
+
         StockHistoryResponse response = StockHistoryResponse.builder()
                 .ticker(stock.getTicker())
                 .companyName(stock.getCompanyName())
-                .history(mockStockDataService.getStockHistory(ticker))
+                .history(history)
                 .build();
 
         return ApiResponse.<StockHistoryResponse>builder()
@@ -57,8 +68,7 @@ public class StockController {
     }
 
     @PostMapping("/{ticker}/analyze")
-    public ApiResponse<AnalyzeResponse> analyzeStock(@PathVariable String ticker,
-                                                     @RequestBody(required = false) AnalyzeRequest request) {
+    public ApiResponse<AnalyzeResponse> analyzeStock(@PathVariable String ticker) {
         Stock stock = mockStockDataService.getStockByTicker(ticker);
 
         if (stock == null) {
